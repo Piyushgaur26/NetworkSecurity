@@ -1,1 +1,1 @@
-## Network security prject on phising data
+## Network security Project on phising data
