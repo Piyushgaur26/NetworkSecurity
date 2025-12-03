@@ -2,6 +2,9 @@ import os, sys, yaml, pickle, dill
 import numpy as np
 from Network_Security.Logging.logger import logging
 from Network_Security.Exception.exception import NetworkSecurityException
+from sklearn.metrics import r2_score
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import accuracy_score
 
 
 def read_yaml_file(file_path: str) -> dict:
@@ -49,3 +52,56 @@ def save_object(file_path: str, obj: object) -> None:
 
     except Exception as e:
         raise NetworkSecurityException(e, SystemError) from e
+
+
+def load_object(file_path: str) -> object:
+    try:
+        if not os.path.exists(file_path):
+            raise Exception(f"The file {file_path} is not exists")
+        with open(file_path, "rb") as file_obj:
+            print(file_obj)
+            return pickle.load(file_obj)
+
+    except Exception as e:
+        raise NetworkSecurityException(e, sys) from e
+
+
+def load_numpy_array_data(file_path: str) -> np.array:
+    """
+    load numpy array data from file
+    file_path: str location of file to load
+    return: np.array data loaded
+    """
+    try:
+        with open(file_path, "rb") as file_obj:
+            return np.load(file_obj)
+
+    except Exception as e:
+        raise NetworkSecurityException(e, sys) from e
+
+
+def evaluate_models(x_train, y_train, x_test, y_test, models, param):
+    try:
+        report = {}
+
+        for name, model in models.items():
+
+            gs = GridSearchCV(model, param.get(name, {}), cv=3)
+            gs.fit(x_train, y_train)
+
+            model.set_params(**gs.best_params_)
+            model.fit(x_train, y_train)
+
+            # Now this model in the dict is TRAINED
+            y_train_pred = model.predict(x_train)
+            y_test_pred = model.predict(x_test)
+
+            train_score = accuracy_score(y_train, y_train_pred)
+            test_score = accuracy_score(y_test, y_test_pred)
+
+            report[name] = test_score
+
+        return report
+
+    except Exception as e:
+        raise NetworkSecurityException(e, sys) from e

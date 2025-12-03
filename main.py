@@ -3,9 +3,8 @@ from Network_Security.Components.data_validation import DataValidation
 from Network_Security.Components.data_transformation import DataTransformation
 from Network_Security.Exception.exception import NetworkSecurityException
 from Network_Security.Logging.logger import logging
-
-# from networksecurity.components.model_trainer import ModelTrainer
-# from Network_Security.Entity.config_entity import ModelTrainerConfig
+from Network_Security.Components.model_trainer import ModelTrainer
+from Network_Security.Entity.config_entity import ModelTrainerConfig
 from Network_Security.Entity.config_entity import TrainingPipelineConfig
 
 from Network_Security.Entity.config_entity import (
@@ -62,7 +61,7 @@ if __name__ == "__main__":
         # -----------------------------------------------------------
         # 4. DATA TRANSFORMATION
         #    - Reads validated train/test CSV
-        #    - Applies preprocessing (KNN imputation in your case)
+        #    - Applies preprocessing (KNN imputation)
         #    - Produces transformed numpy arrays
         #    - Saves fitted preprocessor object + transformed data
         # -----------------------------------------------------------
@@ -71,7 +70,7 @@ if __name__ == "__main__":
         data_transformation_config = DataTransformationConfig(trainingpipelineconfig)
 
         data_transformation = DataTransformation(
-            data_validation_artifact,  # input: validated datasets
+            data_validation_artifact,
             data_transformation_config,
         )
 
@@ -82,8 +81,7 @@ if __name__ == "__main__":
         logging.info("Data Transformation Completed.")
         print(data_transformation_artifact)
 
-        """
-        logging.info("Model Training sstared")
+        logging.info("Model Training Started")
         model_trainer_config = ModelTrainerConfig(trainingpipelineconfig)
         model_trainer = ModelTrainer(
             model_trainer_config=model_trainer_config,
@@ -92,7 +90,6 @@ if __name__ == "__main__":
         model_trainer_artifact = model_trainer.initiate_model_trainer()
 
         logging.info("Model Training artifact created")
-        """
 
     except Exception as e:
         raise NetworkSecurityException(e, sys)
