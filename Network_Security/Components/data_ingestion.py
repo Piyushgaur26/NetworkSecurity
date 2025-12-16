@@ -7,7 +7,7 @@ from typing import List
 from sklearn.model_selection import train_test_split
 from Network_Security.Exception.exception import NetworkSecurityException
 from Network_Security.Entity.config_entity import DataIngestionConfig
-from Network_Security.Entity.artifact_entity import DataingestionArtifact
+from Network_Security.Entity.artifact_entity import DataIngestionArtifact
 from Network_Security.Logging.logger import logging
 from dotenv import load_dotenv
 
@@ -46,11 +46,11 @@ class DataIngestion:
             dataframe = self.export_collection_as_dataframe()
             dataframe = self.export_data_to_feature_store(dataframe)
             self.split_data_as_train_test(dataframe)
-            Dataingestionartifact = DataingestionArtifact(
+            data_ingestion_artifact = DataIngestionArtifact(
                 trained_file_path=self.data_ingestion_config.training_file_path,
                 test_file_path=self.data_ingestion_config.testing_file_path,
             )
-            return Dataingestionartifact
+            return data_ingestion_artifact
         except Exception as e:
             raise NetworkSecurityException(e, sys)
 

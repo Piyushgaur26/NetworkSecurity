@@ -81,6 +81,15 @@ if __name__ == "__main__":
         logging.info("Data Transformation Completed.")
         print(data_transformation_artifact)
 
+        # -----------------------------------------------------------
+        # 5. MODEL TRAINING
+        #    - Initializes model trainer configuration
+        #    - Loads transformed train/test arrays
+        #    - Runs model selection + hyperparameter tuning
+        #    - Trains best-performing model on processed data
+        #    - Logs metrics + model artifacts to MLflow
+        #    - Produces final ModelTrainerArtifact object
+        # -----------------------------------------------------------
         logging.info("Model Training Started")
         model_trainer_config = ModelTrainerConfig(trainingpipelineconfig)
         model_trainer = ModelTrainer(

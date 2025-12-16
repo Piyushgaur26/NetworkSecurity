@@ -1,11 +1,10 @@
-import os, sys, mlflow
+import os, sys, mlflow, dagshub
 from urllib.parse import urlparse
 from Network_Security.Exception.exception import NetworkSecurityException
 from Network_Security.Logging.logger import logging
 from Network_Security.Entity.config_entity import ModelTrainerConfig
 from Network_Security.utils.ml_utils.model.estimator import NetworkModel
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import r2_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import (
@@ -26,6 +25,8 @@ from Network_Security.utils.main_utils.utils import (
     load_numpy_array_data,
     evaluate_models,
 )
+
+dagshub.init(repo_owner="Piyushgaur26", repo_name="NetworkSecurity", mlflow=True)
 
 
 class ModelTrainer:
@@ -50,22 +51,13 @@ class ModelTrainer:
             precision_score = classificationmetric.precision_score
             recall_score = classificationmetric.recall_score
 
-            mlflow.log_metric("f1_score", f1_score)
-            mlflow.log_metric("precision", precision_score)
-            mlflow.log_metric("recall_score", recall_score)
-            mlflow.sklearn.log_model(best_model, "model")
-            # Model registry does not work with file store
-            """ if tracking_url_type_store != "file":
+            # Log metrics
+            mlflow.log_metric("f1_score", classificationmetric.f1_score)
+            mlflow.log_metric("precision", classificationmetric.precision_score)
+            mlflow.log_metric("recall_score", classificationmetric.recall_score)
 
-                # Register the model
-                # There are other ways to use the Model Registry, which depends on the use case,
-                # please refer to the doc for more information:
-                # https://mlflow.org/docs/latest/model-registry.html#api-workflow
-                mlflow.sklearn.log_model(
-                    best_model, "model", registered_model_name=best_model
-                )
-            else:
-                mlflow.sklearn.log_model(best_model, "model")"""
+            # Log model WITHOUT registry (works with DagsHub)
+            #mlflow.sklearn.log_model(sk_model=best_model, artifact_path="model")
 
     def train_model(self, x_train, y_train, x_test, y_test):
         # Define all classification models to evaluate
