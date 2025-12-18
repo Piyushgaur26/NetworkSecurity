@@ -44,11 +44,19 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: Generate image tag
+        id: tag
+        run: |
+          DATE=$(date -u +%Y%m%d)
+          SHORT_SHA=${GITHUB_SHA::7}
+          echo "tag=${DATE}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+
       - name: Build, tag, and push image
+        id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ steps.tag.outputs.tag }}
         run: |
           aws ecr describe-repositories --repository-names "$ECR_REPOSITORY" \
             || aws ecr create-repository --repository-name "$ECR_REPOSITORY"
