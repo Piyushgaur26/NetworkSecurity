@@ -41,23 +41,51 @@ class ModelTrainer:
         except Exception as e:
             raise NetworkSecurityException(e, sys)
 
-    def track_mlflow(self, best_model, classificationmetric):
-        """mlflow.set_registry_uri(
-            "https://dagshub.com/krishnaik06/networksecurity.mlflow"
-        )
-        tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme"""
-        with mlflow.start_run():
-            f1_score = classificationmetric.f1_score
-            precision_score = classificationmetric.precision_score
-            recall_score = classificationmetric.recall_score
+    from urllib.parse import urlparse
 
-            # Log metrics
-            mlflow.log_metric("f1_score", classificationmetric.f1_score)
-            mlflow.log_metric("precision", classificationmetric.precision_score)
-            mlflow.log_metric("recall_score", classificationmetric.recall_score)
 
-            # Log model WITHOUT registry (works with DagsHub)
-            #mlflow.sklearn.log_model(sk_model=best_model, artifact_path="model")
+import mlflow
+import mlflow.sklearn
+
+
+def track_mlflow(self, best_model, classificationmetric):
+    # Set MLflow tracking URI (DagsHub)
+    mlflow.set_registry_uri("https://dagshub.com/Piyushgaur26/NetworkSecurity.mlflow")
+
+    tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
+
+    with mlflow.start_run():
+
+        # =====================
+        # Metrics
+        # =====================
+        f1_score = classificationmetric.f1_score
+        precision_score = classificationmetric.precision_score
+        recall_score = classificationmetric.recall_score
+
+        mlflow.log_metric("f1_score", f1_score)
+        mlflow.log_metric("precision", precision_score)
+        mlflow.log_metric("recall", recall_score)
+
+        # =====================
+        # Model parameters (if available)
+        # =====================
+        if hasattr(best_model, "get_params"):
+            params = best_model.get_params()
+            mlflow.log_params(params)
+
+        # =====================
+        # Tags 
+        # =====================
+        mlflow.set_tag("model_type", type(best_model).__name__)
+        mlflow.set_tag("tracking_uri_type", tracking_url_type_store)
+
+        # =====================
+        # Log model (DagsHub)
+        # =====================
+        mlflow.sklearn.log_model(sk_model=best_model, artifact_path="model")
+
+        print("✅ Model, metrics, and parameters logged successfully to MLflow.")
 
     def train_model(self, x_train, y_train, x_test, y_test):
         # Define all classification models to evaluate
