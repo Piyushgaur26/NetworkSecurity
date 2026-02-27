@@ -17,15 +17,23 @@ The application incorporates a complete MLOps lifecycle—from an automated ETL 
 ## 🚀 Pipeline Architecture & Workflow
 
 1. **ETL Pipeline:** Extracts local raw network data (CSV), transforms it into JSON (key-value pairs), and loads it into a remote MongoDB Atlas database.
+   
 2. **Data Ingestion:** Reads the JSON data from MongoDB, converts it into a pandas DataFrame, splits the data into training and testing sets (80/20 ratio), and stores them in a local feature store artifact folder.
+   
 3. **Data Validation:** Validates the dataset schema (ensuring correct column count and numerical data types). Most importantly, it detects **Data Drift** by comparing the distribution of training and incoming test data using the `ks_2samp` statistical hypothesis test from SciPy, generating a YAML report.
+   
 4. **Data Transformation:** Applies feature engineering by dropping the target column, mapping the target variables (converting -1 to 0), and handling any missing values dynamically using a `KNNImputer` pipeline. The fitted preprocessor is saved as a `preprocessor.pkl` file.
+   
 5. **Model Training & Hyperparameter Tuning:** Trains multiple classification models and performs hyperparameter tuning utilizing `GridSearchCV`. The best-performing model is selected based on evaluated metrics.
+    
 6. **Model Evaluation & MLOps Tracking:** Calculates the F1 Score, Precision, and Recall. Evaluated metrics and model parameters are logged and tracked remotely using **MLflow** connected to **DAGsHub** for team collaboration.
+    
 7. **Model Pusher (AWS S3):** Automatically syncs and uploads the generated pipeline artifacts, the final `model.pkl`, and the `preprocessor.pkl` to an **AWS S3 Bucket** using the AWS CLI, ensuring remote model versioning and storage.
+    
 8. **FastAPI Web Interface:** Exposes the pipeline via two main API routes:
    * `/train`: Triggers the entire ML training pipeline from ingestion to pushing the model to S3.
    * `/predict`: Accepts an uploaded CSV file containing testing data and performs **batch prediction**, outputting an HTML table and a downloadable CSV of the predictions.
+     
 9. **CI/CD Deployment:** Contains a complete GitHub Actions workflow. On every push to the `main` branch, the pipeline performs Continuous Integration (code checkout, environment setup), Continuous Delivery (building a Docker image and pushing it to AWS ECR), and Continuous Deployment (pulling the latest image to an AWS EC2 instance via a self-hosted runner and serving it on port 8080).
 
 ## 📁 Project Structure
